@@ -32,23 +32,28 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 uint32_t layer_state_set_kb(uint32_t state) {
 	uint32_t layer = 0, led_pins = 0;
 
-	if (state & (1<<1)) {
-		layer = 1;
-	}
-	if (state & (1<<2)) {
-		layer = 2;
-	}
-	if (state & (1<<3)) {
-		layer = 3;
+	for (uint8_t i = 0; i < 8; i++) {
+		if (state & (1<<i)) {
+			layer = i;
+		}
 	}
 
 	switch (layer) {
+#if defined(LAYER_LED_STACK)
 		case 3:
 			led_pins |= (1<<PD6);
 		case 2:
 			led_pins |= (1<<PD1);
 		case 1:
 			led_pins |= (1<<PD0);
+#elif defined(LAYER_LED_SYMMETRIC)
+		case 3:
+		case 2:
+			led_pins |= (1<<PD0 | 1<<PD6);
+			if (layer == 2) break;
+		case 1:
+			led_pins |= (1<<PD1);
+#endif
 	}
 
 	PORTD &= ~(1<<PD0 | 1<<PD1 | 1<<PD6);
